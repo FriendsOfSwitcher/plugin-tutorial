@@ -4,7 +4,7 @@ Welcome! This tutorial describes how to create a Switcher plugin.
 
 ## How difficult is creating a plugin?
 
-For most games, you don't need any programming experience to create a plugin (see #codeless-plugin). Creating a plugin could take less than 20 minutes, and it can then be made available for the whole community to use!
+For most games, you don't need any programming experience to create a plugin (see #codeless-plugins). Creating a plugin could take less than 20 minutes, and it can then be made available for the whole community to use!
 
 ## Introduction to plugins
 
@@ -67,7 +67,50 @@ First, let's identify whether Doom Eternal can be supported via a codeless plugi
 
 From our research, we find that configs are saved to `C:\Users\USERNAME\Saved Games\id Software\DOOMEternal`. By poking around the folder, we can deduce that keymaps are stored in `base\DOOMEternalConfig.cfg` and a few graphics settings are stored in `base\DOOMEternalConfig.local`. 
 
-Bad news: we can't fully support graphics settings unless we find a file where the remaining graphics settings are stored. However, we can support keymaps, which may be important to some players who have adjusted their keymaps for optimal efficiency; they will now be able to back up their settings.
+Bad news: we can't fully support graphics settings unless we find a file where the remaining graphics settings are stored. However, we can support keymaps, which may be important to some players who have adjusted their keymaps for optimal efficiency; they will now be able to back up and restore their settings.
 
-In our repository, we'll open `plugin.yaml`. 
+In the downloaded repository, open `plugin.yaml`. 
 
+Set the value of `game` to `"Doom Eternal"`. To clarify the change:
+
+```diff
+- game: "TODO"
++ game: "Doom Eternal"
+```
+
+Set `api` to `1`.
+
+Find the Steam ID of Doom Eternal, and set the value of `steamID`. To find the Steam ID, find the Steam page for the game in the browser and copy the number section of the URL; for Doom Eternal, the URL is [https://store.steampowered.com/app/782330/DOOM_Eternal/](https://store.steampowered.com/app/782330/DOOM_Eternal/) so the Steam ID is `782330`.
+
+Set `uid` to a universal identifier. This should be unique, but its format is not important. I recommend the Java package name convention, which is to use `com.PERSON_ID.REPO_ID`; in this case, I'll use `com.thegreatcabbage.doometernal`.
+
+Set `author` to your GitHub username. 
+
+Set `packageName` to a lower-case, no-spaces name such as `doometernal`.
+
+Set `features` to the supported features, as a list containing one or more of `graphics`, `keymaps` and `saves`. In our case, we'll just support `keymaps`:
+
+```
+features:
+  - keymaps
+```
+
+Remove the lines for `graphicsConfig` and `savesFolder`, since they are not being used.
+
+Set `keymapConfig` to the location of the keymap config file. Since it's stored in a folder within `C:\Users` which depends on the current user, we can't use a plain file path; we need to use what Switcher calls a "Path variable". 
+
+Instead of `C:\Users\USERNAME\Saved Games\id Software\DOOMEternal\base\DOOMEternalConfig.cfg`, we'll use `C:\Users\$!USERNAME!$\Saved Games\id Software\DOOMEternal\base\DOOMEternalConfig.cfg`. The `$!` and `!$` surrounding `USERNAME` instructs Switcher to substitute the real username.
+
+Now, find the folder where Doom Eternal is saved (e.g. `C:\Program Files (x86)\Steam\steamapps\common\DOOMEternal`) and set `GameDirectory` to the folder name: `DOOMEternal`. This is case-sensitive, so take care!
+
+Find a file which identifies that the game is installed (not an empty folder), such as the `.exe` used to launch the game. For Doom Eternal, `DOOMEternalx64vk.exe` will suffice. (This path is relative to the game's folder, and you can use a nested directory such as `bin/win64/GAME.exe` if necessary.)
+
+Now we can upload the plugin to GitHub. Open the plugin's folder in File Explorer, hold `shift` while right-clicking on an empty space and click `Open Powershell window here`. Then run the following commands:
+
+```
+git add -A
+git commit -am "Initial version of plugin"
+git push -u origin master
+```
+
+Finally, go to the GitHub page for your repository and click "Manage topics". Add "switcher-plugin" as a topic, and Switcher will be able to detect your plugin under the "Community plugins" section in the "Manage plugins" dialog. 
